@@ -39,3 +39,30 @@ func (s *Service) CreateUser(ctx context.Context, input CreateUserInput) (Create
 	}
 	return output, nil
 }
+
+func (s *Service) LoginUser(ctx context.Context, input LoginUserInput) (LoginUserOutput, error) {
+	// Step 1: Fetch user by email
+	user, err := s.db.GetUserByEmail(ctx, input.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return LoginUserOutput{}, fmt.Errorf("invalid email or password")
+		}
+		return LoginUserOutput{}, err
+	}
+	// Step 2: Compare passwords
+	err = u.CheckPasswordHash(input.Password, user.Password)
+	if err != nil {
+		return LoginUserOutput{}, fmt.Errorf("invalid email or password")
+	}
+	// Step 3: Generate JWT token
+	token, err := s.tokenizer.GenerateToken(user.ID)
+	if err != nil {
+		return LoginUserOutput{}, err
+	}
+	// Step 4: Return user ID and access token
+	output := LoginUserOutput{
+		UserID:      user.ID,
+		AccessToken: token,
+	}
+	return output, nil
+}

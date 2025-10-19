@@ -49,7 +49,7 @@ func main() {
 		}(),
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.SourceKey {
-				a.Value = slog.StringValue(a.Value.String()[len(cwd):])
+				a.Value = slog.StringValue(a.Value.String()[len(cwd)-1:])
 			}
 			if a.Key == slog.TimeKey {
 				a.Value = slog.StringValue(a.Value.String()[:19] + " UTC")

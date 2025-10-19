@@ -5,6 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/instaUpload/user-service/database"
+
+	"github.com/instaUpload/user-service/servicer/tokenizer"
 	"github.com/instaUpload/user-service/types"
 	"github.com/jackc/pgx/v5"
 )
@@ -12,12 +14,14 @@ import (
 type Servicer interface {
 	GetVersion() string
 	CreateUser(context.Context, CreateUserInput) (CreateUserOutput, error)
+	LoginUser(context.Context, LoginUserInput) (LoginUserOutput, error)
 	Close(ctx context.Context, cancel context.CancelFunc)
 }
 
 type Service struct {
-	conn *pgx.Conn
-	db   *database.Queries
+	conn      *pgx.Conn
+	db        *database.Queries
+	tokenizer tokenizer.Tokenizer
 }
 
 func NewService(ctx context.Context) *Service {
@@ -29,9 +33,11 @@ func NewService(ctx context.Context) *Service {
 		slog.Error("failed to connect to database", "slog", err)
 		cancel()
 	}
+	token := tokenizer.NewBasicTokenizer()
 	serv := &Service{
-		db:   database.New(conn),
-		conn: conn,
+		db:        database.New(conn),
+		conn:      conn,
+		tokenizer: token,
 	}
 	go serv.Close(ctx, cancel)
 	return serv

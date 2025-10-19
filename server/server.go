@@ -37,6 +37,7 @@ func (s *ChiServer) MountRoutes() {
 	// Mount routes to the Chi server
 	s.router.Get("/health", s.handle.HealthCheck)
 	s.router.Post("/users", s.handle.CreateUser)
+	s.router.Post("/users/login", s.handle.LoginUser)
 	// Add more routes as needed
 }
 

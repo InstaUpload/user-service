@@ -63,3 +63,17 @@ func (c *DatabaseConfig) DSN() string {
 func (c *DatabaseConfig) ConnectionString() string {
 	return fmt.Sprintf("%s://%s:%s@%s:%d/%s?sslmode=%s", c.Server, c.User, c.Password, c.Host, c.Port, c.Name, c.SSLMode)
 }
+
+type TokenizerConfig struct {
+	SecretKey       string
+	ExpirationHours int
+}
+
+func NewTokenizerConfig() *TokenizerConfig {
+	secretKey := u.GetEnvAsString("TOKEN_SECRET_KEY", "mysecretkey")
+	expirationHours := u.GetEnvAsInt("TOKEN_EXPIRATION_HOURS", 72)
+	return &TokenizerConfig{
+		SecretKey:       secretKey,
+		ExpirationHours: expirationHours,
+	}
+}

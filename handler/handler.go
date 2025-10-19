@@ -15,6 +15,7 @@ type Handler interface {
 	// Define handler methods here
 	HealthCheck(http.ResponseWriter, *http.Request)
 	CreateUser(http.ResponseWriter, *http.Request)
+	LoginUser(http.ResponseWriter, *http.Request)
 	Close(ctx context.Context, cancel context.CancelFunc)
 }
 
@@ -85,6 +86,37 @@ func (h *ChiHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Message: "User created successfully",
 	}
 	u.WriteResponse(w, http.StatusCreated, response)
+}
+
+func (h *ChiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	// Step 1 convert request body to LoginUserRequest struct
+	var req LoginUserRequest
+	err := u.ParseJSON(r.Body, &req)
+	if err != nil {
+		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	// Step 2 validate the struct fields.
+	err = u.ValidateStruct(req)
+	if err != nil {
+		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	userInput := servicer.LoginUserInput{
+		Email:    req.Email,
+		Password: req.Password,
+	}
+	loginUserOutput, err := h.servicer.LoginUser(r.Context(), userInput)
+	if err != nil {
+		slog.Error("Failed to login user", slog.String("error", err.Error()))
+		u.WriteErrorResponse(w, http.StatusUnauthorized, "Invalid email or password")
+		return
+	}
+	response := LoginUserResponse{
+		UserID:      loginUserOutput.UserID,
+		AccessToken: loginUserOutput.AccessToken,
+	}
+	u.WriteResponse(w, http.StatusOK, response)
 }
 
 func (h *ChiHandler) Close(ctx context.Context, cancel context.CancelFunc) {

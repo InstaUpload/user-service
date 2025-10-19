@@ -7,6 +7,16 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	UserID  int32 `json:"user_id"`
+	UserID  int32  `json:"user_id"`
 	Message string `json:"message"`
+}
+
+type LoginUserRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+}
+
+type LoginUserResponse struct {
+	UserID      int32  `json:"user_id"`
+	AccessToken string `json:"access_token"`
 }
