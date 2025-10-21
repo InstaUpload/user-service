@@ -10,6 +10,7 @@ import (
 type Tokenizer interface {
 	GenerateToken(userID int32) (string, error)
 	ValidateToken(token string) (int32, error)
+	GenerateJWT(email string) (string, error)
 }
 
 type BasicTokenizer struct {

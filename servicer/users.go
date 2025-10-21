@@ -3,6 +3,7 @@ package servicer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/instaUpload/user-service/database"
 	u "github.com/instaUpload/user-service/utils"
@@ -45,20 +46,26 @@ func (s *Service) LoginUser(ctx context.Context, input LoginUserInput) (LoginUse
 	user, err := s.db.GetUserByEmail(ctx, input.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return LoginUserOutput{}, fmt.Errorf("invalid email or password")
+			return LoginUserOutput{}, fmt.Errorf("invalid email")
 		}
 		return LoginUserOutput{}, err
 	}
+	slog.Info("Found the user's email")
+
 	// Step 2: Compare passwords
-	err = u.CheckPasswordHash(input.Password, user.Password)
+	err = u.CheckPasswordHash(input.Password, []byte(user.Password))
 	if err != nil {
-		return LoginUserOutput{}, fmt.Errorf("invalid email or password")
+		return LoginUserOutput{}, fmt.Errorf("invalid password")
 	}
+	slog.Info("The password is correct")
+
 	// Step 3: Generate JWT token
-	token, err := s.tokenizer.GenerateToken(user.ID)
+	token, err := s.tokenizer.GenerateJWT(user.Email)
 	if err != nil {
 		return LoginUserOutput{}, err
 	}
+	slog.Info("Generated the token")
+
 	// Step 4: Return user ID and access token
 	output := LoginUserOutput{
 		UserID:      user.ID,
