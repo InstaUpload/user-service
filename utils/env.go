@@ -40,3 +40,11 @@ func GetEnvAsInt(key string, defaultValue int) int {
 	}
 	return val
 }
+
+func GetEnvAsBytes(key string, defaultValue []byte) []byte {
+	valStr := GetEnv(key, "")
+	if valStr == "" {
+		return defaultValue
+	}
+	return []byte(valStr)
+}

@@ -77,3 +77,17 @@ func NewTokenizerConfig() *TokenizerConfig {
 		ExpirationHours: expirationHours,
 	}
 }
+
+type TokenizerConfigJWT struct {
+	SecretKeyJWT    []byte
+	ExpirationHours int
+}
+
+func NewTokenizerConfigJWT() *TokenizerConfigJWT {
+	secretKeyJWT := u.GetEnvAsBytes("TOKEN_SECRET_KEY_JWT", []byte("mysecretkey"))
+	expirationHours := u.GetEnvAsInt("TOKEN_EXPIRATION_HOURS", 72)
+	return &TokenizerConfigJWT{
+		SecretKeyJWT:    secretKeyJWT,
+		ExpirationHours: expirationHours,
+	}
+}

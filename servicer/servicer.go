@@ -21,7 +21,7 @@ type Servicer interface {
 type Service struct {
 	conn      *pgx.Conn
 	db        *database.Queries
-	tokenizer tokenizer.Tokenizer
+	tokenizer tokenizer.TokenizerJWT
 }
 
 func NewService(ctx context.Context) *Service {
@@ -33,11 +33,11 @@ func NewService(ctx context.Context) *Service {
 		slog.Error("failed to connect to database", "slog", err)
 		cancel()
 	}
-	token := tokenizer.NewBasicTokenizer()
+	tokenizer := tokenizer.NewBasicTokenizerJWT()
 	serv := &Service{
 		db:        database.New(conn),
 		conn:      conn,
-		tokenizer: token,
+		tokenizer: tokenizer,
 	}
 	go serv.Close(ctx, cancel)
 	return serv
