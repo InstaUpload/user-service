@@ -33,7 +33,7 @@ func NewService(ctx context.Context) *Service {
 		slog.Error("failed to connect to database", "slog", err)
 		cancel()
 	}
-	token := tokenizer.NewBasicTokenizer()
+	token := tokenizer.NewJWTTokenizer()
 	serv := &Service{
 		db:        database.New(conn),
 		conn:      conn,
