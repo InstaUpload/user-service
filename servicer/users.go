@@ -3,6 +3,7 @@ package servicer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/instaUpload/user-service/database"
 	u "github.com/instaUpload/user-service/utils"
@@ -57,6 +58,7 @@ func (s *Service) LoginUser(ctx context.Context, input LoginUserInput) (LoginUse
 	// Step 3: Generate JWT token
 	token, err := s.tokenizer.GenerateToken(user.ID)
 	if err != nil {
+		slog.Error("Error generating token", "error", err)
 		return LoginUserOutput{}, err
 	}
 	// Step 4: Return user ID and access token
