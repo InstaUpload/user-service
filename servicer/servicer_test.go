@@ -54,7 +54,7 @@ func setupDatabaseContainer(ctx context.Context) *postgres.PostgresContainer {
 
 func TestMain(m *testing.M) {
 	// This is a placeholder main function.
-	if err := godotenv.Load("../.env"); err != nil {
+	if err := godotenv.Load("../../.env"); err != nil {
 		fmt.Println("No .env file found", err)
 		return
 	}
