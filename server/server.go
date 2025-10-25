@@ -38,6 +38,11 @@ func (s *ChiServer) MountRoutes() {
 	s.router.Get("/health", s.handle.HealthCheck)
 	s.router.Post("/users", s.handle.CreateUser)
 	s.router.Post("/users/login", s.handle.LoginUser)
+	s.router.Group(func(r chi.Router) {
+		r.Use(s.handle.AuthenticateUser)
+		// Protected routes go here
+		r.Get("/users", s.handle.GetUserByID)
+	})
 	// Add more routes as needed
 }
 

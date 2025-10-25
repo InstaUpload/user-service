@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/instaUpload/user-service/database"
+	t "github.com/instaUpload/user-service/types"
 	u "github.com/instaUpload/user-service/utils"
 	"github.com/jackc/pgx/v5"
 )
@@ -61,9 +62,30 @@ func (s *Service) LoginUser(ctx context.Context, loginUser *t.User) (string, err
 		return "", err
 	}
 	// Step 4: Return user ID and access token
-	output := LoginUserOutput{
-		UserID:      user.ID,
-		AccessToken: token,
+	return token, nil
+}
+
+func (s *Service) AuthenticateToken(ctx context.Context, token string) (int64, error) {
+	// Step 1: Validate and parse the token
+	userID, err := s.tokenizer.ValidateToken(token)
+	if err != nil {
+		slog.Error("Error validating token", "error", err)
+		return 0, fmt.Errorf("invalid or expired token")
 	}
-	return output, nil
+	// Step 2: Return user ID
+	return int64(userID), nil
+}
+
+func (s *Service) GetUserByID(ctx context.Context, userID int64) (t.User, error) {
+	// Step 1 get user by Id from store
+	user, err := s.db.GetUserByID(ctx, int32(userID))
+	if err != nil {
+		return t.User{}, err
+	}
+
+	return t.User{
+		ID:       int64(user.ID),
+		Email:    user.Email,
+		Fullname: user.Fullname,
+	}, nil
 }

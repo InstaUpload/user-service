@@ -17,7 +17,11 @@ setup:
 	@echo "Starting docker compose services..."
 	cd ..
 	docker compose up -d --build
-	cd user-service
+
+# Generate sqlc queries
+query:
+	@echo "Creating sqlc queries"
+	sqlc generate
 
 # Migrate command: run setup first, then run migrations
 migrate: setup
