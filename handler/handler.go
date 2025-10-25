@@ -5,9 +5,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 
-	servicer "github.com/instaUpload/user-service/servicer"
+	"github.com/instaUpload/user-service/cache"
+	"github.com/instaUpload/user-service/servicer"
 
+	t "github.com/instaUpload/user-service/types"
 	u "github.com/instaUpload/user-service/utils"
 )
 
@@ -58,39 +61,30 @@ func (h *ChiHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 
 func (h *ChiHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Step 1 convert request body to CreateUserRequest struct
-	var req CreateUserRequest
-	err := u.ParseJSON(r.Body, &req)
+	var newUser t.User
+	err := u.ParseJSON(r.Body, &newUser)
 	if err != nil {
 		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 	// Step 2 validate the struct fields.
-	err = u.ValidateStruct(req)
+	err = u.ValidateStruct(newUser)
 	if err != nil {
 		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	userInput := servicer.CreateUserInput{
-		Email:    req.Email,
-		Fullname: req.Fullname,
-		Password: req.Password,
-	}
-	createUserOutput, err := h.servicer.CreateUser(r.Context(), userInput)
+	err = h.servicer.CreateUser(r.Context(), &newUser)
 	if err != nil {
 		slog.Error("Failed to create user", slog.String("error", err.Error()))
 		u.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to create user")
 		return
 	}
-	response := CreateUserResponse{
-		UserID:  createUserOutput.UserID,
-		Message: "User created successfully",
-	}
-	u.WriteResponse(w, http.StatusCreated, response)
+	u.WriteResponse(w, http.StatusCreated, &newUser)
 }
 
 func (h *ChiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Step 1 convert request body to LoginUserRequest struct
-	var req LoginUserRequest
+	var req t.User
 	err := u.ParseJSON(r.Body, &req)
 	if err != nil {
 		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
@@ -99,22 +93,17 @@ func (h *ChiHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Step 2 validate the struct fields.
 	err = u.ValidateStruct(req)
 	if err != nil {
-		u.WriteErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		u.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	userInput := servicer.LoginUserInput{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-	loginUserOutput, err := h.servicer.LoginUser(r.Context(), userInput)
+	token, err := h.servicer.LoginUser(r.Context(), &req)
 	if err != nil {
 		slog.Error("Failed to login user", slog.String("error", err.Error()))
 		u.WriteErrorResponse(w, http.StatusUnauthorized, "Invalid email or password")
 		return
 	}
-	response := LoginUserResponse{
-		UserID:      loginUserOutput.UserID,
-		AccessToken: loginUserOutput.AccessToken,
+	response := map[string]string{
+		"token": token,
 	}
 	u.WriteResponse(w, http.StatusOK, response)
 }
