@@ -13,8 +13,10 @@ import (
 
 type Servicer interface {
 	GetVersion() string
-	CreateUser(context.Context, CreateUserInput) (CreateUserOutput, error)
-	LoginUser(context.Context, LoginUserInput) (LoginUserOutput, error)
+	CreateUser(context.Context, *types.User) error
+	LoginUser(context.Context, *types.User) (string, error)
+	AuthenticateToken(context.Context, string) (int64, error)
+	GetUserByID(context.Context, int64) (types.User, error)
 	Close(ctx context.Context, cancel context.CancelFunc)
 }
 

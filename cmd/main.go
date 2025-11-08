@@ -29,7 +29,7 @@ func (a *App) Run(_ context.Context) error {
 
 func main() {
 	// STEP 1: Read all the environment variables needed for the application.
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("../.env"); err != nil {
 		fmt.Println("No .env file found")
 		return
 	}

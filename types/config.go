@@ -77,3 +77,27 @@ func NewTokenizerConfig() *TokenizerConfig {
 		ExpirationHours: expirationHours,
 	}
 }
+
+type CacheConfig struct {
+	Host     string
+	Port     int
+	Password string
+	DB       int
+}
+
+func NewCacheConfig() *CacheConfig {
+	host := u.GetEnvAsString("REDIS_HOST", "localhost")
+	port := u.GetEnvAsInt("REDIS_PORT", 6379)
+	password := u.GetEnvAsString("REDIS_PASSWORD", "")
+	db := u.GetEnvAsInt("REDIS_DB", 0)
+	return &CacheConfig{
+		Host:     host,
+		Port:     port,
+		Password: password,
+		DB:       db,
+	}
+}
+
+func (c *CacheConfig) Address() string {
+	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+}

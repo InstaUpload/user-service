@@ -17,5 +17,7 @@ type LoginUserInput struct {
 
 type LoginUserOutput struct {
 	UserID      int32  `json:"user_id"`
+	Fullname    string `json:"fullname"`
+	Email       string `json:"email"`
 	AccessToken string `json:"access_token"`
 }

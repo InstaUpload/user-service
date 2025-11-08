@@ -1,5 +1,5 @@
 # Include environment variables from .env file
-include .env
+include ../.env
 export
 
 .PHONY: setup migrate run help
@@ -15,7 +15,13 @@ help:
 # Setup command: run docker compose up -d --build
 setup:
 	@echo "Starting docker compose services..."
+	cd ..
 	docker compose up -d --build
+
+# Generate sqlc queries
+query:
+	@echo "Creating sqlc queries"
+	sqlc generate
 
 # Migrate command: run setup first, then run migrations
 migrate: setup
